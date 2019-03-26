@@ -6,7 +6,10 @@ import io.pkts.packet.Packet;
 import io.pkts.packet.TCPPacket;
 import io.pkts.protocol.Protocol;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 
 /**
@@ -25,9 +28,9 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         //Opens given packet file
-        //final Pcap pcap = Pcap.openStream(args[0]);
+        final Pcap pcap = Pcap.openStream(args[0]);
         //Opens given packet file (Debugging version)
-        final Pcap pcap = Pcap.openStream("capture.pcap");
+        //final Pcap pcap = Pcap.openStream("capture.pcap");
 
         //Loops through all packets in given file
         pcap.loop(new PacketHandler() {
@@ -90,7 +93,9 @@ public class Main {
         }
     }
 
-    private static void processInformation() {
+    private static void processInformation() throws FileNotFoundException {
+        //Print writer for file output
+        PrintWriter writer = new PrintWriter(new File("output.txt"));
         //Iterates through all keys in dataSent
         for(String key: dataSent.keySet()) {
             //Gets the total number of SYN packets sent
@@ -100,15 +105,16 @@ public class Main {
                 //Pull SYN+ACK response packets and check ratio.  If 3x more SYN only packets are sent then print IP
                 int receivedSYNACK = dataReceived.get(key) * 3;
                 if (sentSYN >= receivedSYNACK) {
-                    System.out.printf("%s: sent %d packets, received %d packets\n",key, sentSYN, dataReceived.get(key));
+                    writer.printf("%s: sent %d packets, received %d packets\n",key, sentSYN, dataReceived.get(key));
                 }
             }
             //Check for Ip's that only sent packets and never recieved any
             else {
                 if(sentSYN > 0) {
-                    System.out.printf("%s: sent %d packets, received 0 packets\n",key, sentSYN);
+                    writer.printf("%s: sent %d packets, received 0 packets\n",key, sentSYN);
                 }
             }
         }
+        writer.close();
     }
 }
