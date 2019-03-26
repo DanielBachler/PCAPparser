@@ -25,9 +25,9 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         //Opens given packet file
-        final Pcap pcap = Pcap.openStream(args[0]);
+        //final Pcap pcap = Pcap.openStream(args[0]);
         //Opens given packet file (Debugging version)
-        //final Pcap pcap = Pcap.openStream("capture.pcap");
+        final Pcap pcap = Pcap.openStream("capture.pcap");
 
         //Loops through all packets in given file
         pcap.loop(new PacketHandler() {
@@ -100,7 +100,13 @@ public class Main {
                 //Pull SYN+ACK response packets and check ratio.  If 3x more SYN only packets are sent then print IP
                 int receivedSYNACK = dataReceived.get(key) * 3;
                 if (sentSYN >= receivedSYNACK) {
-                    System.out.println(key);
+                    System.out.printf("%s: sent %d packets, received %d packets\n",key, sentSYN, dataReceived.get(key));
+                }
+            }
+            //Check for Ip's that only sent packets and never recieved any
+            else {
+                if(sentSYN > 0) {
+                    System.out.printf("%s: sent %d packets, received 0 packets\n",key, sentSYN);
                 }
             }
         }
